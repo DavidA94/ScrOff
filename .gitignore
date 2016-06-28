@@ -27,3 +27,11 @@
 *.exe
 *.out
 *.app
+
+# Visual Studio
+/ScrOff/x64
+/x64/Release
+*.aps
+*.sdf
+*.opendb
+/.vs/ScrOff/v14
