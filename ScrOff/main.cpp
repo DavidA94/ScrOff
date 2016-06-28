@@ -23,14 +23,25 @@ void makeRunOnStartup() {
     auto status = RegCreateKeyExA(HKEY_LOCAL_MACHINE, REG_KEY_PATH, 0, NULL, 
                                   REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE | KEY_WOW64_64KEY, NULL, &regKey, NULL);
 
-    // If something went wrong, then just stop here
+    // If something went wrong, then try the curent user
     if (status != ERROR_SUCCESS) {
         #ifdef DEBUG
         mylog << "Unable to acess the registry. Got code " << status << std::endl;
         #endif
         
-        RegCloseKey(regKey);
-        return;
+        // Use the current user
+        status = RegCreateKeyExA(HKEY_CURRENT_USER, REG_KEY_PATH, 0, NULL,
+            REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE | KEY_WOW64_64KEY, NULL, &regKey, NULL);
+
+        // If we still don't get anything, then just stop
+        if (status != ERROR_SUCCESS) {
+            #ifdef DEBUG
+            mylog << "Unable to acess the registry. Got code " << status << std::endl;
+            #endif
+
+            RegCloseKey(regKey);
+            return;
+        }
     }
     
     // Try to get the registry value to see if it already exists
