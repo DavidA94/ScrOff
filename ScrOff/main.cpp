@@ -20,7 +20,7 @@ void makeRunOnStartup() {
     GetModuleFileNameA(NULL, appLoc, MAX_PATH);
 
     // Create/Open to the registry key
-    auto status = RegCreateKeyExA(HKEY_LOCAL_MACHINE, REG_KEY_PATH, 0, NULL, 
+    auto status = RegCreateKeyExA(HKEY_CURRENT_USER, REG_KEY_PATH, 0, NULL,
                                   REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE | KEY_WOW64_64KEY, NULL, &regKey, NULL);
 
     // If something went wrong, then try the curent user
@@ -28,24 +28,13 @@ void makeRunOnStartup() {
         #ifdef DEBUG
         mylog << "Unable to acess the registry. Got code " << status << std::endl;
         #endif
-        
-        // Use the current user
-        status = RegCreateKeyExA(HKEY_CURRENT_USER, REG_KEY_PATH, 0, NULL,
-            REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE | KEY_WOW64_64KEY, NULL, &regKey, NULL);
 
-        // If we still don't get anything, then just stop
-        if (status != ERROR_SUCCESS) {
-            #ifdef DEBUG
-            mylog << "Unable to acess the registry. Got code " << status << std::endl;
-            #endif
-
-            RegCloseKey(regKey);
-            return;
-        }
+        RegCloseKey(regKey);
+        return;
     }
     
     // Try to get the registry value to see if it already exists
-    status = RegGetValueA(HKEY_LOCAL_MACHINE, REG_KEY_PATH, REG_VALUE_NAME, RRF_RT_REG_SZ, NULL, &regData, &bufSize);
+    status = RegGetValueA(HKEY_CURRENT_USER, REG_KEY_PATH, REG_VALUE_NAME, RRF_RT_REG_SZ, NULL, &regData, &bufSize);
 
     // If we got a bad key, then we need to create it
     if (status == ERROR_BADKEY || status == ERROR_FILE_NOT_FOUND) {
@@ -92,7 +81,7 @@ int __stdcall WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int
     makeRunOnStartup();
 
     // Register the hotkey that will turn off the monitor [Ctrl] + [Shift] + Q
-    RegisterHotKey(NULL, TURN_OFF_SCREEN, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'Q');
+    RegisterHotKey(NULL, TURN_OFF_SCREEN, MOD_CONTROL | MOD_SHIFT | MOD_ALT | MOD_NOREPEAT, 'Z');
 
     // Infinite loop to watch for the shortcut
     MSG msg = { 0 };
